@@ -1,0 +1,6 @@
+{
+  "name": "Life RPG",
+  "description": "Gamified productivity RPG transforming real-world tasks into quests, XP, character stats, and epic progression.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
