@@ -87,6 +87,57 @@ const analyzedTaskSchema = {
   required: ['title', 'description', 'attribute', 'difficulty', 'xpReward', 'goldReward', 'reasoning'],
 };
 
+function fallbackAnalyzeTask(trimmedInput: string): AnalyzedTask {
+  const lower = trimmedInput.toLowerCase();
+
+  let attribute: RPGAttribute = 'Intellect';
+  let difficulty: DifficultyTier = 'Medium';
+  let xpReward = 60;
+  let goldReward = 30;
+
+  if (/(run|gym|pushup|workout|lift|exercise|walk|stretch|jog|cardio|train|fitness|squat|pullup)/i.test(lower)) {
+    attribute = 'Strength';
+    xpReward = 75;
+    goldReward = 35;
+  } else if (/(study|read|code|program|learn|research|math|write|algorithm|exam|course|practice|dsa|java|react|c\+\+)/i.test(lower)) {
+    attribute = 'Intellect';
+    xpReward = 80;
+    goldReward = 40;
+  } else if (/(water|sleep|meditat|breathe|diet|fast|eat|health|relax|hydrate|salad|yoga)/i.test(lower)) {
+    attribute = 'Vitality';
+    xpReward = 50;
+    goldReward = 25;
+  } else if (/(lead|meeting|team|call|network|present|mentor|speak|organize|clean|chore|laundry|plan)/i.test(lower)) {
+    attribute = 'Charisma';
+    xpReward = 55;
+    goldReward = 28;
+  }
+
+  if (/(hard|marathon|epic|master|complex|heavy|intense|2 hour|3 hour|all day)/i.test(lower)) {
+    difficulty = 'Hard';
+    xpReward = Math.round(xpReward * 1.5);
+    goldReward = Math.round(goldReward * 1.5);
+  } else if (/(quick|easy|5 min|10 min|small|simple|trivial)/i.test(lower)) {
+    difficulty = 'Easy';
+    xpReward = Math.max(25, Math.round(xpReward * 0.7));
+    goldReward = Math.max(15, Math.round(goldReward * 0.7));
+  }
+
+  const title = trimmedInput.length > 50
+    ? trimmedInput.substring(0, 47) + '...'
+    : trimmedInput.charAt(0).toUpperCase() + trimmedInput.slice(1);
+
+  return {
+    title,
+    description: `Conquered objective: ${trimmedInput}`,
+    attribute,
+    difficulty,
+    xpReward,
+    goldReward,
+    reasoning: `Heuristically analyzed and tuned for ${attribute} progression.`,
+  };
+}
+
 /**
  * Uses Gemini (gemini-2.5-flash) to parse a plain-English task string into
  * a structured RPG task with categorized attribute, difficulty tier, and rewards.
@@ -99,9 +150,9 @@ export async function analyzeTaskWithAI(taskInput: string): Promise<AnalyzedTask
 
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    throw new Error(
-      'Missing Gemini API Key. Please configure GEMINI_API_KEY (or VITE_GEMINI_API_KEY) in your environment settings.'
-    );
+    // If no key is set yet, provide intelligent heuristic analysis seamlessly
+    console.info('[aiService] No GEMINI_API_KEY found, using rule-based progression analysis.');
+    return fallbackAnalyzeTask(trimmedInput);
   }
 
   const ai = new GoogleGenAI({
@@ -133,19 +184,19 @@ Determine an appropriate difficulty tier (Trivial, Easy, Medium, Hard, Epic) and
 
     const rawText = response.text?.trim();
     if (!rawText) {
-      throw new Error('Received an empty response from Gemini API.');
+      return fallbackAnalyzeTask(trimmedInput);
     }
 
     let parsed: AnalyzedTask;
     try {
       parsed = JSON.parse(rawText) as AnalyzedTask;
     } catch (parseError: any) {
-      throw new Error(`Malformed JSON response from AI: ${parseError?.message || 'Parse error'}`);
+      return fallbackAnalyzeTask(trimmedInput);
     }
 
     // Validate required fields
     if (!parsed.title || !parsed.attribute || !parsed.difficulty || typeof parsed.xpReward !== 'number') {
-      throw new Error('AI response is missing required task attributes.');
+      return fallbackAnalyzeTask(trimmedInput);
     }
 
     // Ensure numbers are bounded and non-negative
@@ -154,9 +205,7 @@ Determine an appropriate difficulty tier (Trivial, Easy, Medium, Hard, Epic) and
 
     return parsed;
   } catch (error: any) {
-    if (error.message?.includes('API key not valid') || error.status === 400 || error.status === 403) {
-      throw new Error('Invalid Gemini API Key. Please verify your GEMINI_API_KEY credentials.');
-    }
-    throw error;
+    console.warn('[aiService] Gemini API call failed, falling back to heuristic analysis:', error);
+    return fallbackAnalyzeTask(trimmedInput);
   }
 }

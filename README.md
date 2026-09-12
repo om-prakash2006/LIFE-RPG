@@ -7,7 +7,7 @@
 ## 🔗 Live Deployment & Deliverables
 
 - **Live Deployed App**: [https://life-rpg-delta-hazel.vercel.app](https://life-rpg-delta-hazel.vercel.app)
-- **Walkthrough Demonstration Video**: `https://<your-video-link>` *(Replace with your unlisted YouTube, Loom, Drive, or repository video link)*
+- **Walkthrough Demonstration Video**: [Watch Walkthrough Demo Video (Google Drive)](https://drive.google.com/file/d/1fvg0yqNwiobuwOWXY7HNqWf7pPclkllW/view?usp=drivesdk)
 
 ---
 
