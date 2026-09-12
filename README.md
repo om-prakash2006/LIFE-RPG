@@ -4,6 +4,13 @@
 
 ---
 
+## 🔗 Live Deployment & Deliverables
+
+- **Live Deployed App**: [https://life-rpg-delta-hazel.vercel.app](https://life-rpg-delta-hazel.vercel.app)
+- **Walkthrough Demonstration Video**: `https://<your-video-link>` *(Replace with your unlisted YouTube, Loom, Drive, or repository video link)*
+
+---
+
 ## 🌟 Core Architecture & Feature Matrix
 
 | Feature | Description | Status |
@@ -70,11 +77,22 @@ npm run dev
 ```
 The application will start on `http://localhost:3000`.
 
-### 6. Build for Production
+### 6. Build for Production & Deployment
 ```bash
 npm run build
 ```
 Production static assets will be output to `dist/`.
+
+#### Deploying on Vercel:
+1. Import your GitHub repository into Vercel.
+2. Framework Preset: **Vite**
+3. Build Command: `npm run build`
+4. Output Directory: `dist`
+5. In **Settings -> Environment Variables**, add:
+   - `VITE_SUPABASE_URL`: Your Supabase Project URL
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase Anonymous Public Key
+   - `GEMINI_API_KEY`: *(Optional)* Your Gemini API key for AI quests
+6. `vercel.json` is already provided at the repository root to handle SPA client-side routes and page refreshes cleanly without 404 errors.
 
 ---
 
